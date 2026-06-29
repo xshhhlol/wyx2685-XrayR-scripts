@@ -84,7 +84,7 @@ before_show_menu() {
 }
 
 install() {
-    bash <(curl -Ls https://raw.githubusercontent.com/leaderen/wyx2685-XrayR-scripts/master/install-xrayx.sh)
+    bash <(curl -Ls https://raw.githubusercontent.com/xshhhlol/wyx2685-XrayR-scripts/master/install-xrayx.sh)
     if [[ $? == 0 ]]; then
         if [[ $# == 0 ]]; then
             start
@@ -100,7 +100,7 @@ update() {
     else
         version=$2
     fi
-    bash <(curl -Ls https://raw.githubusercontent.com/leaderen/wyx2685-XrayR-scripts/master/install-xrayx.sh) $version
+    bash <(curl -Ls https://raw.githubusercontent.com/xshhhlol/wyx2685-XrayR-scripts/master/install-xrayx.sh) $version
     if [[ $? == 0 ]]; then
         echo -e "${green}更新完成，已自动重启 XrayX，请使用 XrayX log 查看运行日志${plain}"
         exit
@@ -253,7 +253,7 @@ install_bbr() {
 }
 
 update_shell() {
-    wget -O /usr/bin/XrayX -N --no-check-certificate https://raw.githubusercontent.com/leaderen/wyx2685-XrayR-scripts/master/XrayX.sh
+    wget -O /usr/bin/XrayX -N --no-check-certificate https://raw.githubusercontent.com/xshhhlol/wyx2685-XrayR-scripts/master/XrayX.sh
     if [[ $? != 0 ]]; then
         echo ""
         echo -e "${red}下载脚本失败，请检查本机能否连接 Github${plain}"
@@ -370,7 +370,7 @@ show_usage() {
 show_menu() {
     echo -e "
   ${green}XrayX 后端管理脚本，${plain}${red}不适用于docker${plain}
---- https://github.com/leaderen/wyx2685-XrayR ---
+--- https://github.com/xshhhlol/wyx2685-XrayR-scripts ---
   ${green}0.${plain} 修改配置
 ————————————————
   ${green}1.${plain} 安装 XrayX

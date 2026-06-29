@@ -6,8 +6,8 @@ yellow='\033[0;33m'
 plain='\033[0m'
 
 cur_dir=$(pwd)
-# 脚本所在目录（用于读取本地 XrayX.service / XrayX.sh / config 等文件）
-script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# 脚本仓库地址（用于远程下载 XrayX.service / XrayX.sh / config 等文件）
+repo_raw="https://raw.githubusercontent.com/xshhhlol/wyx2685-XrayR-scripts/master"
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${red}错误：${plain} 必须使用root用户运行此脚本！\n" && exit 1
@@ -150,8 +150,12 @@ install_XrayX() {
     chmod +x XrayX
     mkdir /etc/XrayX/ -p
     rm /etc/systemd/system/XrayX.service -f
-    # 使用仓库内本地 service 文件
-    cp "${script_dir}/XrayX.service" /etc/systemd/system/XrayX.service
+    # 从仓库远程下载 service 文件
+    wget -q -N --no-check-certificate -O /etc/systemd/system/XrayX.service ${repo_raw}/XrayX.service
+    if [[ $? -ne 0 ]]; then
+        echo -e "${red}下载 XrayX.service 失败，请检查仓库地址或网络${plain}"
+        exit 1
+    fi
     systemctl daemon-reload
     systemctl stop XrayX
     systemctl unmask XrayX 2>/dev/null || true
@@ -161,7 +165,7 @@ install_XrayX() {
     cp geosite.dat /etc/XrayX/
 
     if [[ ! -f /etc/XrayX/config.yml ]]; then
-        cp "${script_dir}/config/config.yml" /etc/XrayX/
+        cp config.yml /etc/XrayX/
         echo -e ""
         echo -e "全新安装，请先参看教程：https://github.com/XrayR-project/XrayR，配置必要的内容"
     else
@@ -177,22 +181,26 @@ install_XrayX() {
     fi
 
     if [[ ! -f /etc/XrayX/dns.json ]]; then
-        cp "${script_dir}/config/dns.json" /etc/XrayX/
+        cp dns.json /etc/XrayX/
     fi
     if [[ ! -f /etc/XrayX/route.json ]]; then
-        cp "${script_dir}/config/route.json" /etc/XrayX/
+        cp route.json /etc/XrayX/
     fi
     if [[ ! -f /etc/XrayX/custom_outbound.json ]]; then
-        cp "${script_dir}/config/custom_outbound.json" /etc/XrayX/
+        cp custom_outbound.json /etc/XrayX/
     fi
     if [[ ! -f /etc/XrayX/custom_inbound.json ]]; then
-        cp "${script_dir}/config/custom_inbound.json" /etc/XrayX/
+        cp custom_inbound.json /etc/XrayX/
     fi
     if [[ ! -f /etc/XrayX/rulelist ]]; then
-        cp "${script_dir}/config/rulelist" /etc/XrayX/
+        cp rulelist /etc/XrayX/
     fi
-    # 使用仓库内本地管理脚本
-    cp "${script_dir}/XrayX.sh" /usr/bin/XrayX
+    # 从仓库远程下载管理脚本
+    wget -q -N --no-check-certificate -O /usr/bin/XrayX ${repo_raw}/XrayX.sh
+    if [[ $? -ne 0 ]]; then
+        echo -e "${red}下载 XrayX.sh 管理脚本失败，请检查仓库地址或网络${plain}"
+        exit 1
+    fi
     chmod +x /usr/bin/XrayX
     ln -sf /usr/bin/XrayX /usr/bin/xrayx # 小写兼容
     chmod +x /usr/bin/xrayx
