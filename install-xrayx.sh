@@ -164,11 +164,27 @@ install_XrayX() {
     cp geoip.dat /etc/XrayX/
     cp geosite.dat /etc/XrayX/
 
+    # 配置模板从本脚本仓库下载，不使用上游 release 里的 XrayR 模板，保证与 XrayR 完全独立
+    for f in config.yml dns.json route.json custom_outbound.json custom_inbound.json rulelist; do
+        wget -q --no-check-certificate -O ${f} ${repo_raw}/config/${f}
+        if [[ $? -ne 0 ]]; then
+            echo -e "${red}下载配置模板 ${f} 失败，请检查仓库地址或网络${plain}"
+            exit 1
+        fi
+    done
+    # 模板内所有 XrayR 路径改为 XrayX 自己的目录
+    sed -i 's|/etc/XrayR/|/etc/XrayX/|g' config.yml
+
     if [[ ! -f /etc/XrayX/config.yml ]]; then
         cp config.yml /etc/XrayX/
         echo -e ""
         echo -e "全新安装，请先参看教程：https://github.com/XrayR-project/XrayR，配置必要的内容"
     else
+        # 已有配置若仍引用 /etc/XrayR/ 下的文件，说明尚未与 XrayR 分离，升级时提醒迁移
+        if grep -qE '^[^#]*/etc/XrayR/' /etc/XrayX/config.yml; then
+            echo -e "${yellow}警告：/etc/XrayX/config.yml 中仍有配置项指向 /etc/XrayR/ 下的文件${plain}"
+            echo -e "${yellow}如需与 XrayR 完全独立，请把对应文件复制到 /etc/XrayX/ 后，将路径改为 /etc/XrayX/ 开头${plain}"
+        fi
         systemctl start XrayX
         sleep 2
         check_status
