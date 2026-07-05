@@ -106,22 +106,22 @@ install_XrayX() {
     mkdir /usr/local/XrayX/ -p
 	cd /usr/local/XrayX/
 
+    # 检测失败（如超出 Github API 限制）时回退到此默认版本
+    default_version="v0.9.3"
     if  [ $# == 0 ] ;then
         # 获取最新的 release
         last_version=$(curl -Ls "https://api.github.com/repos/leaderen/wyx2685-XrayR/releases" | grep '"tag_name":' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
         if [[ ! -n "$last_version" ]]; then
-            echo -e "${red}检测 XrayX 版本失败，可能是超出 Github API 限制，请稍后再试，或手动指定版本安装${plain}"
-            echo -e "${yellow}提示：可以手动指定版本安装，例如：bash install-xrayx.sh v0.9.2${plain}"
-            exit 1
+            echo -e "${yellow}检测 XrayX 版本失败（可能超出 Github API 限制），回退到默认版本 ${default_version}${plain}"
+            last_version="${default_version}"
         fi
-        echo -e "检测到 XrayX 最新版本：${last_version}，开始安装"
+        echo -e "开始安装 XrayX ${last_version}"
 
-        # 尝试下载最新版本（上游二进制名仍为 XrayR）
+        # 尝试下载该版本（上游二进制名仍为 XrayR）
         wget -q -N --no-check-certificate -O /usr/local/XrayX/XrayR-linux.zip https://github.com/leaderen/wyx2685-XrayR/releases/download/${last_version}/XrayR-linux-${arch}.zip
         if [[ $? -ne 0 ]]; then
-            echo -e "${yellow}${last_version} 下载失败，尝试 v0.9.2...${plain}"
-            # 如果最新版本下载失败，尝试 v0.9.2
-            last_version="v0.9.2"
+            echo -e "${yellow}${last_version} 下载失败，尝试默认版本 ${default_version}...${plain}"
+            last_version="${default_version}"
             wget -q -N --no-check-certificate -O /usr/local/XrayX/XrayR-linux.zip https://github.com/leaderen/wyx2685-XrayR/releases/download/${last_version}/XrayR-linux-${arch}.zip
             if [[ $? -ne 0 ]]; then
                 echo -e "${red}下载 XrayX 失败，请确保你的服务器能够下载 Github 的文件${plain}"
