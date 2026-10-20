@@ -8,6 +8,8 @@ plain='\033[0m'
 cur_dir=$(pwd)
 # 脚本仓库地址（用于远程下载 XrayX.service / XrayX.sh / config 等文件）
 repo_raw="https://raw.githubusercontent.com/xshhhlol/wyx2685-XrayR-scripts/master"
+# 内核仓库（XrayX 二进制从该仓库的 release 下载）
+core_repo="xshhhlol/wyx2685-XrayR"
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${red}错误：${plain} 必须使用root用户运行此脚本！\n" && exit 1
@@ -107,10 +109,10 @@ install_XrayX() {
 	cd /usr/local/XrayX/
 
     # 检测失败（如超出 Github API 限制）时回退到此默认版本
-    default_version="v0.9.3"
+    default_version="v0.9.7"
     if  [ $# == 0 ] ;then
         # 获取最新的 release
-        last_version=$(curl -Ls "https://api.github.com/repos/leaderen/wyx2685-XrayR/releases" | grep '"tag_name":' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+        last_version=$(curl -Ls "https://api.github.com/repos/${core_repo}/releases" | grep '"tag_name":' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
         if [[ ! -n "$last_version" ]]; then
             echo -e "${yellow}检测 XrayX 版本失败（可能超出 Github API 限制），回退到默认版本 ${default_version}${plain}"
             last_version="${default_version}"
@@ -118,11 +120,11 @@ install_XrayX() {
         echo -e "开始安装 XrayX ${last_version}"
 
         # 尝试下载该版本（上游二进制名仍为 XrayR）
-        wget -q -N --no-check-certificate -O /usr/local/XrayX/XrayR-linux.zip https://github.com/leaderen/wyx2685-XrayR/releases/download/${last_version}/XrayR-linux-${arch}.zip
+        wget -q -N --no-check-certificate -O /usr/local/XrayX/XrayR-linux.zip https://github.com/${core_repo}/releases/download/${last_version}/XrayR-linux-${arch}.zip
         if [[ $? -ne 0 ]]; then
             echo -e "${yellow}${last_version} 下载失败，尝试默认版本 ${default_version}...${plain}"
             last_version="${default_version}"
-            wget -q -N --no-check-certificate -O /usr/local/XrayX/XrayR-linux.zip https://github.com/leaderen/wyx2685-XrayR/releases/download/${last_version}/XrayR-linux-${arch}.zip
+            wget -q -N --no-check-certificate -O /usr/local/XrayX/XrayR-linux.zip https://github.com/${core_repo}/releases/download/${last_version}/XrayR-linux-${arch}.zip
             if [[ $? -ne 0 ]]; then
                 echo -e "${red}下载 XrayX 失败，请确保你的服务器能够下载 Github 的文件${plain}"
                 exit 1
@@ -134,7 +136,7 @@ install_XrayX() {
 	else
 	    last_version="v"$1
 	fi
-        url="https://github.com/leaderen/wyx2685-XrayR/releases/download/${last_version}/XrayR-linux-${arch}.zip"
+        url="https://github.com/${core_repo}/releases/download/${last_version}/XrayR-linux-${arch}.zip"
         echo -e "开始安装 XrayX ${last_version}"
         wget -q -N --no-check-certificate -O /usr/local/XrayX/XrayR-linux.zip ${url}
         if [[ $? -ne 0 ]]; then
