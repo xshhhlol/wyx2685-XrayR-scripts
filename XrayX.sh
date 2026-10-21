@@ -112,8 +112,16 @@ update() {
 }
 
 config() {
-    echo "XrayX在修改配置后会自动尝试重启"
+    echo "XrayX在修改并保存配置后会自动重启，未修改则不重启"
+    before_md5=$(md5sum /etc/XrayX/config.yml 2>/dev/null | awk '{print $1}')
     vi /etc/XrayX/config.yml
+    after_md5=$(md5sum /etc/XrayX/config.yml 2>/dev/null | awk '{print $1}')
+    if [[ x"${before_md5}" == x"${after_md5}" ]]; then
+        echo -e "${yellow}配置文件未修改，不重启XrayX${plain}"
+        return 0
+    fi
+    echo -e "${green}检测到配置文件已修改，正在重启XrayX...${plain}"
+    systemctl restart XrayX
     sleep 2
     check_status
     case $? in
@@ -121,7 +129,7 @@ config() {
             echo -e "XrayX状态: ${green}已运行${plain}"
             ;;
         1)
-            echo -e "检测到您未启动XrayX或XrayX自动重启失败，是否查看日志？[Y/n]" && echo
+            echo -e "XrayX重启失败，是否查看日志？[Y/n]" && echo
             read -e -p "(默认: y):" yn
             [[ -z ${yn} ]] && yn="y"
             if [[ ${yn} == [Yy] ]]; then
